@@ -1,42 +1,31 @@
-// Creat web server
-// 1. Import express
-const express = require('express');
+// Create web server
+const http = require('http');
+const fs = require('fs');
+const url = require('url');
+const { parse } = require('querystring');
 
-// 2. Create an instance of express
-const app = express();
-
-// 3. Define a port
-const port = 8080;
-
-// 4. Define a route
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-// 5. Start the server
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
-
-// 6. Import comments data
-const comments = require('./data/comments');
-
-// 7. Define a route for comments
-app.get('/comments', (req, res) => {
-  res.json(comments);
-});
-
-// 8. Define a route for a comment
-app.get('/comments/:id', (req, res) => {
-  const comment = comments.find((comment) => comment.id === parseInt(req.params.id));
-  if (comment) {
-    res.json(comment);
-  } else {
-    res.status(404).json({ message: `Comment ${req.params.id} not found` });
-  }
-});
-
-// 9. Start the server
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+// Create web server
+http.createServer((req, res) => {
+  // Parse the request containing file name
+  const pathname = url.parse(req.url).pathname;
+  // Print the name of the file for which request is made.
+  console.log('Request for ' + pathname + ' received.');
+  // Read the requested file content from file system
+  fs.readFile(pathname.substr(1), (err, data) => {
+    if (err) {
+      console.log(err);
+      // HTTP Status: 404 : NOT FOUND
+      // Content Type: text/plain
+      res.writeHead(404, { 'Content-Type': 'text/html' });
+    } else {
+      // Page found
+      // HTTP Status: 200 : OK
+      // Content Type: text/plain
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      // Write the content of the file to response body
+      res.write(data.toString());
+    }
+    // Send the response body
+    res.end();
+  });
+}).listen(8081);
